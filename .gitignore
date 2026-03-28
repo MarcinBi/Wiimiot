@@ -1,5 +1,4 @@
-.pio/
-.vscode/
 .DS_Store
-__pycache__/
-*.pyc
+firmware/.pio/
+firmware/.vscode/
+firmware/include/secrets.h
