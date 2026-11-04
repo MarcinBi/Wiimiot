@@ -8,12 +8,15 @@
 // other side of button -> GND
 const int BUTTON_PIN = 4;
 
-// Optional LED for feedback
+// LED feedback
 const int LED_PIN = 2;
+
+// Haptic motor control pin
+const int MOTOR_PIN = 18;  // GPIO -> resistor -> transistor base
 
 bool lastButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 250;
+const unsigned long debounceDelay = 100;
 
 void connectWifi() {
   WiFi.mode(WIFI_STA);
@@ -29,6 +32,12 @@ void connectWifi() {
   Serial.println("Connected!");
   Serial.print("ESP IP: ");
   Serial.println(WiFi.localIP());
+}
+
+void buzzMotor(int durationMs) {
+  digitalWrite(MOTOR_PIN, HIGH);
+  delay(durationMs);
+  digitalWrite(MOTOR_PIN, LOW);
 }
 
 void sendSleepRequest() {
@@ -50,15 +59,16 @@ void sendSleepRequest() {
     Serial.print("Response body: ");
     Serial.println(response);
 
-    // quick LED blink on success
+    // LED blink on success
     digitalWrite(LED_PIN, HIGH);
-    delay(200);
+    delay(20);
     digitalWrite(LED_PIN, LOW);
+    
   } else {
     Serial.print("Request failed, error: ");
     Serial.println(http.errorToString(httpCode));
   }
-
+  
   http.end();
 }
 
@@ -67,7 +77,10 @@ void setup() {
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(LED_PIN, OUTPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
+
   digitalWrite(LED_PIN, LOW);
+  digitalWrite(MOTOR_PIN, LOW);
 
   connectWifi();
 }
@@ -80,6 +93,7 @@ void loop() {
     if (millis() - lastDebounceTime > debounceDelay) {
       lastDebounceTime = millis();
       Serial.println("Button pressed");
+      buzzMotor(300);
       sendSleepRequest();
     }
   }
